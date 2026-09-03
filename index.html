@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Workplace Reactions Quiz</title>
+<style>
+  :root{
+    --bg:#f4f1ea;
+    --card:#ffffff;
+    --ink:#242021;
+    --muted:#6b6560;
+    --accent:#c9622f;
+    --accent-dark:#a84f22;
+    --line:#e6e0d4;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    font-family:'Georgia', 'Iowan Old Style', serif;
+    background:var(--bg);
+    color:var(--ink);
+    display:flex;
+    justify-content:center;
+    padding:40px 16px;
+    min-height:100vh;
+  }
+  .wrap{width:100%;max-width:640px;}
+  h1{
+    font-size:1.6rem;
+    margin-bottom:4px;
+    letter-spacing:.3px;
+  }
+  .sub{
+    color:var(--muted);
+    font-size:.95rem;
+    margin-bottom:28px;
+  }
+  .progress{
+    height:5px;
+    background:var(--line);
+    border-radius:3px;
+    overflow:hidden;
+    margin-bottom:28px;
+  }
+  .progress-bar{
+    height:100%;
+    width:25%;
+    background:var(--accent);
+    transition:width .3s ease;
+  }
+  .card{
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:14px;
+    padding:28px;
+    box-shadow:0 2px 10px rgba(0,0,0,.04);
+  }
+  .qnum{
+    color:var(--accent);
+    font-size:.8rem;
+    text-transform:uppercase;
+    letter-spacing:1.5px;
+    margin-bottom:8px;
+    font-family:Helvetica, Arial, sans-serif;
+  }
+  .qtext{
+    font-size:1.25rem;
+    line-height:1.4;
+    margin-bottom:22px;
+  }
+  .options{
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+  }
+  .opt{
+    text-align:left;
+    padding:14px 16px;
+    border:1.5px solid var(--line);
+    border-radius:10px;
+    background:#fdfcfa;
+    font-family:inherit;
+    font-size:1rem;
+    cursor:pointer;
+    transition:border-color .15s, background .15s, transform .1s;
+  }
+  .opt:hover{
+    border-color:var(--accent);
+    background:#fff8f2;
+  }
+  .opt.selected{
+    border-color:var(--accent);
+    background:#fceee3;
+    font-weight:bold;
+  }
+  .nav{
+    display:flex;
+    justify-content:space-between;
+    margin-top:24px;
+  }
+  button.nav-btn{
+    font-family:Helvetica, Arial, sans-serif;
+    font-size:.9rem;
+    padding:10px 20px;
+    border-radius:8px;
+    border:none;
+    cursor:pointer;
+    background:var(--accent);
+    color:#fff;
+    transition:background .15s;
+  }
+  button.nav-btn:disabled{
+    background:#d8d2c6;
+    cursor:not-allowed;
+  }
+  button.nav-btn:hover:not(:disabled){
+    background:var(--accent-dark);
+  }
+  button.ghost{
+    background:transparent;
+    color:var(--muted);
+    border:1.5px solid var(--line);
+  }
+  button.ghost:hover{
+    background:#efeae0;
+  }
+  .summary-item{
+    border-bottom:1px solid var(--line);
+    padding:14px 0;
+  }
+  .summary-item:last-child{border-bottom:none;}
+  .summary-q{
+    font-size:.85rem;
+    color:var(--muted);
+    font-family:Helvetica, Arial, sans-serif;
+    margin-bottom:4px;
+  }
+  .summary-a{
+    font-size:1.05rem;
+  }
+  .talk{
+    margin-top:26px;
+    background:#fff8f2;
+    border:1px dashed var(--accent);
+    border-radius:10px;
+    padding:18px 20px;
+    font-family:Helvetica, Arial, sans-serif;
+    font-size:.92rem;
+    color:var(--ink);
+    line-height:1.5;
+  }
+  .talk strong{color:var(--accent-dark);}
+  .hidden{display:none;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Workplace Reactions</h1>
+  <div class="sub">Choose the answer that's closest to how you'd really react.</div>
+
+  <div class="progress"><div class="progress-bar" id="progressBar"></div></div>
+
+  <div class="card" id="quizCard">
+    <div class="qnum" id="qnum">Question 1 of 4</div>
+    <div class="qtext" id="qtext"></div>
+    <div class="options" id="options"></div>
+    <div class="nav">
+      <button class="nav-btn ghost" id="backBtn">Back</button>
+      <button class="nav-btn" id="nextBtn" disabled>Next</button>
+    </div>
+  </div>
+
+  <div class="card hidden" id="resultCard">
+    <h2 style="margin-top:0;font-size:1.3rem;">Your answers</h2>
+    <div id="summaryList"></div>
+    <div class="talk">
+      <strong>For discussion:</strong> Compare your answers with a partner. Which reaction is the most professional? Which is the most honest? Try to justify your choices using phrases like <em>"I'd rather..."</em>, <em>"It depends on..."</em>, <em>"To be honest..."</em>
+    </div>
+    <div class="nav">
+      <button class="nav-btn ghost" id="restartBtn">Start again</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const questions = [
+  {
+    text: "Your boss gives you a new task at 4:55 p.m.",
+    options: [
+      "😐 \"Sure, no problem.\"",
+      "😤 \"Seriously? Now?\"",
+      "🤔 \"When do you need it by?\""
+    ]
+  },
+  {
+    text: "You realise you will miss a deadline.",
+    options: [
+      "A. Work late and say nothing.",
+      "B. Tell your manager immediately.",
+      "C. Hope nobody notices."
+    ]
+  },
+  {
+    text: "A colleague makes a mistake that affects your work.",
+    options: [
+      "A. Fix it yourself.",
+      "B. Tell them.",
+      "C. Tell your boss."
+    ]
+  },
+  {
+    text: "You have five things to do and everything is urgent.",
+    options: [
+      "A. Panic.",
+      "B. Make a list and prioritise.",
+      "C. Start with the easiest task."
+    ]
+  }
+];
+
+let current = 0;
+let answers = new Array(questions.length).fill(null);
+
+const qnum = document.getElementById('qnum');
+const qtext = document.getElementById('qtext');
+const optionsEl = document.getElementById('options');
+const backBtn = document.getElementById('backBtn');
+const nextBtn = document.getElementById('nextBtn');
+const progressBar = document.getElementById('progressBar');
+const quizCard = document.getElementById('quizCard');
+const resultCard = document.getElementById('resultCard');
+const summaryList = document.getElementById('summaryList');
+const restartBtn = document.getElementById('restartBtn');
+
+function renderQuestion(){
+  const q = questions[current];
+  qnum.textContent = `Question ${current+1} of ${questions.length}`;
+  qtext.textContent = q.text;
+  progressBar.style.width = `${((current+1)/questions.length)*100}%`;
+  optionsEl.innerHTML = '';
+  q.options.forEach((opt, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'opt' + (answers[current] === i ? ' selected' : '');
+    btn.textContent = opt;
+    btn.onclick = () => {
+      answers[current] = i;
+      renderQuestion();
+    };
+    optionsEl.appendChild(btn);
+  });
+  backBtn.disabled = current === 0;
+  nextBtn.disabled = answers[current] === null;
+  nextBtn.textContent = current === questions.length - 1 ? 'See results' : 'Next';
+}
+
+backBtn.onclick = () => {
+  if (current > 0){ current--; renderQuestion(); }
+};
+
+nextBtn.onclick = () => {
+  if (current < questions.length - 1){
+    current++;
+    renderQuestion();
+  } else {
+    showResults();
+  }
+};
+
+function showResults(){
+  quizCard.classList.add('hidden');
+  resultCard.classList.remove('hidden');
+  summaryList.innerHTML = '';
+  questions.forEach((q, i) => {
+    const div = document.createElement('div');
+    div.className = 'summary-item';
+    div.innerHTML = `<div class="summary-q">${q.text}</div><div class="summary-a">${q.options[answers[i]]}</div>`;
+    summaryList.appendChild(div);
+  });
+}
+
+restartBtn.onclick = () => {
+  current = 0;
+  answers = new Array(questions.length).fill(null);
+  resultCard.classList.add('hidden');
+  quizCard.classList.remove('hidden');
+  renderQuestion();
+};
+
+renderQuestion();
+</script>
+</body>
+</html>
